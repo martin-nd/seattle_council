@@ -351,7 +351,74 @@ display: none;
 <div id="data-collection" class="section level2" number="1.2">
 <h2><span class="header-section-number">1.2</span> Data Collection</h2>
 <p>In order to get a good idea of what council members find important, I figured it best to go straight to the source. Seattle local government offers a <a href="https://news.seattle.gov">news RSS feed</a> that is freely accessible. I used python’s <code>feedparser</code> library to grab all RSS feed entries from the last 10 years and stored them in a local Mongo database. Each RSS entry comes with a date, a link to the article or post, and some other metadata. I then sifted through the 20248 entries as of May 15, 2024 and identified every feed entry with a link to <code>council.seattle.gov</code>.</p>
-<p>Using python’s <code>BeautifulSoup</code> library, I was able to scrape the raw text of each of these council announcements and put those into a separate collection in the same Mongo database.</p>
+<p>Using python’s <code>BeautifulSoup</code> library, I was able to scrape the raw text of each of these council announcements and put those into a separate collection in the same Mongo database. Then, using regex, I extracted the council member whose office published the announcement for each announcement. After finding all this, I used <code>nltk</code> to remove stopwords and create frequency distributions for word count to get a sense of the subjects of announcements. Using this frequency distributions I came up with the following categories for each announcement:</p>
+<ul>
+<li>Budget</li>
+<li>Traffic</li>
+<li>Public transit</li>
+<li>Utilities-light</li>
+<li>Utilities-heat</li>
+<li>Utilities-water</li>
+<li>Utilities-electric</li>
+<li>Civil unrest</li>
+<li>Civil rights</li>
+<li>Parks</li>
+<li>Labor</li>
+<li>Housing</li>
+<li>Homelessness</li>
+<li>Political-legislation</li>
+<li>Political-city council</li>
+<li>Political-mayor</li>
+<li>Political-general</li>
+<li>Crime</li>
+<li>Police-general</li>
+<li>Police-controversy</li>
+<li>Police-political</li>
+<li>Public safety</li>
+<li>Public health</li>
+<li>Public services</li>
+<li>Covid-general</li>
+<li>Covid-vaccines</li>
+<li>Covid-masks</li>
+<li>Infrastructure</li>
+<li>Business</li>
+<li>Real estate</li>
+<li>Welfare-unemployment</li>
+<li>Welfare-food</li>
+<li>Economics</li>
+<li>Environmental</li>
+<li>Sports</li>
+</ul>
+<p>After determining these categories, I proceeded to use a zero-shot, deep-learning text classification model to measure the strength of the relationship between these categories and each announcement. I used an open source model and ran it locally. The specific model is available <a href="https://huggingface.co/BAAI/bge-reranker-v2-m3">here</a>. I used normalized outputs and measured the strength of the relationship for all categories for each announcement. I then transformed these measurements to better adhere to Gaussian distributions using the transformation: <span class="math inline">\(\mathcal{G} = \frac{1}{2}\log{\left(\frac{p}{1-p}\right)}\)</span>. After transforming I centered and scaled it to get data that looks like this:</p>
+<pre><code>## Rows: 2012 Columns: 37
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr   (1): councilmember
+## dbl  (35): budget, traffic, public transit, utilities-light, utilities-heat,...
+## date  (1): date
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre><code>## # A tibble: 10 × 37
+##    date       councilmember budget traffic `public transit` `utilities-light`
+##    &lt;date&gt;     &lt;chr&gt;          &lt;dbl&gt;   &lt;dbl&gt;            &lt;dbl&gt;             &lt;dbl&gt;
+##  1 2024-05-13 Morales       -0.891  0.221             0.378          -0.826  
+##  2 2024-04-30 Morales       -0.308  0.359             0.791           0.263  
+##  3 2024-04-16 Morales        0.234 -0.0691            0.162           0.585  
+##  4 2024-04-11 Morales        1.28  -0.370            -0.436          -0.265  
+##  5 2024-04-05 Nelson        -0.128  0.607             0.904           0.603  
+##  6 2024-03-28 Morales       -0.317  1.29              1.22            0.214  
+##  7 2024-02-27 Morales       -0.322  0.639             0.969          -0.217  
+##  8 2024-02-10 Morales       -0.359  0.634             0.474          -0.00904
+##  9 2024-01-23 Nelson        -0.259  0.437             0.531           0.881  
+## 10 2024-01-12 Morales       -0.107  0.639             0.567          -0.165  
+## # ℹ 31 more variables: `utilities-heat` &lt;dbl&gt;, `utilities-water` &lt;dbl&gt;,
+## #   `utilities-electric` &lt;dbl&gt;, `civil unrest` &lt;dbl&gt;, `civil rights` &lt;dbl&gt;,
+## #   parks &lt;dbl&gt;, labor &lt;dbl&gt;, housing &lt;dbl&gt;, homelessness &lt;dbl&gt;,
+## #   `political-legislation` &lt;dbl&gt;, `political-city council` &lt;dbl&gt;,
+## #   `political-mayor` &lt;dbl&gt;, `political-general` &lt;dbl&gt;, crime &lt;dbl&gt;,
+## #   `police-general` &lt;dbl&gt;, `police-controversy` &lt;dbl&gt;,
+## #   `police-political` &lt;dbl&gt;, `public safety` &lt;dbl&gt;, `public health` &lt;dbl&gt;, …</code></pre>
 </div>
 </div>
 

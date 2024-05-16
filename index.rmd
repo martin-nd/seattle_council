@@ -4,6 +4,12 @@ author: "Martin Sloley"
 output: bookdown::html_document2
 ---
 
+```{r setup, include=F}
+library(tidyverse)
+library(plotly)
+library(caret)
+```
+
 # Overview
 
 ## Goals
@@ -14,4 +20,47 @@ One problem with public policy (for me, as an extremely lazy person) is the amou
 
 In order to get a good idea of what council members find important, I figured it best to go straight to the source. Seattle local government offers a [news RSS feed](https://news.seattle.gov) that is freely accessible. I used python's `feedparser` library to grab all RSS feed entries from the last 10 years and stored them in a local Mongo database. Each RSS entry comes with a date, a link to the article or post, and some other metadata. I then sifted through the 20248 entries as of May 15, 2024 and identified every feed entry with a link to `council.seattle.gov`.
 
-Using python's `BeautifulSoup` library, I was able to scrape the raw text of each of these council announcements and put those into a separate collection in the same Mongo database.
+Using python's `BeautifulSoup` library, I was able to scrape the raw text of each of these council announcements and put those into a separate collection in the same Mongo database. Then, using regex, I extracted the council member whose office published the announcement for each announcement. After finding all this, I used `nltk` to remove stopwords and create frequency distributions for word count to get a sense of the subjects of announcements. Using this frequency distributions I came up with the following categories for each announcement:
+
+- Budget
+- Traffic
+- Public transit
+- Utilities-light
+- Utilities-heat
+- Utilities-water
+- Utilities-electric
+- Civil unrest
+- Civil rights
+- Parks
+- Labor
+- Housing
+- Homelessness
+- Political-legislation
+- Political-city council
+- Political-mayor
+- Political-general
+- Crime
+- Police-general
+- Police-controversy
+- Police-political
+- Public safety
+- Public health
+- Public services
+- Covid-general
+- Covid-vaccines
+- Covid-masks
+- Infrastructure
+- Business
+- Real estate
+- Welfare-unemployment
+- Welfare-food
+- Economics
+- Environmental
+- Sports
+
+After determining these categories, I proceeded to use a zero-shot, deep-learning text classification model to measure the strength of the relationship between these categories and each announcement. I used an open source model and ran it locally. The specific model is available [here](https://huggingface.co/BAAI/bge-reranker-v2-m3). I used normalized outputs and measured the strength of the relationship for all categories for each announcement. I then transformed these measurements to better adhere to Gaussian distributions using the transformation: $\mathcal{G} = \frac{1}{2}\log{\left(\frac{p}{1-p}\right)}$. After transforming I centered and scaled it to get data that looks like this:
+
+```{r display data, echo=F}
+data = read_csv("scaled_clean_tendency_data.csv")
+head(data, 10)
+```
