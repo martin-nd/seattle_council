@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = F)
 library(tidyverse)
 library(plotly)
 library(caret)
+library(reshape2)
 data = read_csv("scaled_clean_tendency_data.csv")
 normdat = read_csv("norm_scaled_clean_tendency_data.csv")
 ```
@@ -144,8 +145,43 @@ for var in results_table["subject"]:
 pd.DataFrame(results_table).sort_values(by = "pval", ascending = False).reset_index(drop = True)
 ```
 
-It would appear that the members of the city council are not always talking about the same things. I would say that's good, it means there's a diversity of thought within the council. Let's get some aggregates and see what each council member is talking about.
+It would appear that the members of the city council are not always talking about the same things. I would say that's good, it means there's a diversity of thought within the council. Let's get some aggregates and see what each council member is talking about. We can do this with a parallel coordinates plot.
 
-```{r}
+```{r, warning=F, message=F, fig.width=10, fig.height=8}
+norm_melted = normdat %>%
+        select(-date) %>%
+        group_by(councilmember) %>%
+        summarize_if(is.numeric, mean) %>%
+        melt()
 
+ggplot(norm_melted, aes(x = variable, y = value, color = councilmember, group = councilmember)) +
+        geom_line() +
+        labs(title = "Parallel Coordinates Plot of Subject Prevalence per Council Member",
+             y = "Prevalence Score", x = "Subject", color = "Council Member") +
+        theme(axis.text.x = element_text(size = 9, angle = 45))
 ```
+
+
+We can also compare subsets, for example, the three most prevalent council members in the data set.
+
+```{r top3, message=F, warning=F, fig.width = 10, fig.height = 8}
+top3 = normdat %>%
+        group_by(councilmember) %>%
+        summarize(count = n()) %>%
+        arrange(desc(count)) %>%
+        head(3) %>%
+        .$councilmember
+
+top3_melt = norm_melted %>%
+        filter(councilmember %in% top3)
+
+ggplot(top3_melt, aes(x = variable, y = value, color = councilmember, group = councilmember)) +
+  geom_line() +
+  labs(title = "Parallel Coordinates Plot of Subject Prevalence for 3 Most Prolific Council Members",
+       y = "Prevalence Score", x = "Subject", color = "Council Member") +
+  theme(axis.text.x = element_text(size = 9, angle = 45))
+```
+
+We can see here that council members Herbold and Sawant tend not to talk about the same subjects.
+
+# Unsupervised learning
