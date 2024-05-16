@@ -390,15 +390,6 @@ display: none;
 <li>Sports</li>
 </ul>
 <p>After determining these categories, I proceeded to use a zero-shot, deep-learning text classification model to measure the strength of the relationship between these categories and each announcement. I used an open source model and ran it locally. The specific model is available <a href="https://huggingface.co/BAAI/bge-reranker-v2-m3">here</a>. I used normalized outputs and measured the strength of the relationship for all categories for each announcement. I then transformed these measurements to better adhere to Gaussian distributions using the transformation: <span class="math inline">\(\mathcal{G} = \frac{1}{2}\log{\left(\frac{p}{1-p}\right)}\)</span>. After transforming I centered and scaled it to get data that looks like this:</p>
-<pre><code>## Rows: 2012 Columns: 37
-## ── Column specification ────────────────────────────────────────────────────────
-## Delimiter: &quot;,&quot;
-## chr   (1): councilmember
-## dbl  (35): budget, traffic, public transit, utilities-light, utilities-heat,...
-## date  (1): date
-## 
-## ℹ Use `spec()` to retrieve the full column specification for this data.
-## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 <pre><code>## # A tibble: 10 × 37
 ##    date       councilmember budget traffic `public transit` `utilities-light`
 ##    &lt;date&gt;     &lt;chr&gt;          &lt;dbl&gt;   &lt;dbl&gt;            &lt;dbl&gt;             &lt;dbl&gt;
@@ -419,6 +410,7 @@ display: none;
 ## #   `political-mayor` &lt;dbl&gt;, `political-general` &lt;dbl&gt;, crime &lt;dbl&gt;,
 ## #   `police-general` &lt;dbl&gt;, `police-controversy` &lt;dbl&gt;,
 ## #   `police-political` &lt;dbl&gt;, `public safety` &lt;dbl&gt;, `public health` &lt;dbl&gt;, …</code></pre>
+<p>All code used is available in the <a href="https://github.com/martin-nd/seattle_council">github repo</a>, although, be warned, the collection and processing is extremely messy. If this wasn’t just a one-time scrape I would have been cleaner.</p>
 </div>
 </div>
 
