@@ -1,0 +1,35 @@
+budget
+traffic
+public transit
+utilities-light
+utilities-heat
+utilities-water
+utilities-electric
+civil unrest
+civil rights
+parks
+labor
+housing
+homelessness
+political-legislation
+political-city council
+political-mayor
+political-general
+crime
+police-general
+police-controversy
+police-political
+public safety
+public health
+public services
+covid-general
+covid-vaccines
+covid-masks
+infrastructure
+business
+real estate
+welfare-unemployment
+welfare-food
+economics
+environmental
+sports
