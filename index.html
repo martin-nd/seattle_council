@@ -344,6 +344,15 @@ display: none;
 
 <div id="overview" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Overview</h1>
+<div id="goals" class="section level2" number="1.1">
+<h2><span class="header-section-number">1.1</span> Goals</h2>
+<p>One problem with public policy (for me, as an extremely lazy person) is the amount of reading required to get an overview of what matters to local political figures. In order to get a better idea of what the Seattle City Council members consider important, I figured that I could just see what they seem to talk about often, with the goal being putting together a good idea of what matters to each council member and having a dataset that I can draw some conclusions from regarding how I may want to vote in the future.</p>
+</div>
+<div id="data-collection" class="section level2" number="1.2">
+<h2><span class="header-section-number">1.2</span> Data Collection</h2>
+<p>In order to get a good idea of what council members find important, I figured it best to go straight to the source. Seattle local government offers a <a href="https://news.seattle.gov">news RSS feed</a> that is freely accessible. I used python’s <code>feedparser</code> library to grab all RSS feed entries from the last 10 years and stored them in a local Mongo database. Each RSS entry comes with a date, a link to the article or post, and some other metadata. I then sifted through the 20248 entries as of May 15, 2024 and identified every feed entry with a link to <code>council.seattle.gov</code>.</p>
+<p>Using python’s <code>BeautifulSoup</code> library, I was able to scrape the raw text of each of these council announcements and put those into a separate collection in the same Mongo database.</p>
+</div>
 </div>
 
 
