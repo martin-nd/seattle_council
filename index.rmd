@@ -13,6 +13,8 @@ library(tidyverse)
 library(plotly)
 library(caret)
 library(reshape2)
+library(magrittr)
+library(DT)
 data = read_csv("scaled_clean_tendency_data.csv")
 normdat = read_csv("norm_scaled_clean_tendency_data.csv")
 ```
@@ -184,4 +186,12 @@ ggplot(top3_melt, aes(x = variable, y = value, color = councilmember, group = co
 
 We can see here that council members Herbold and Sawant tend not to talk about the same subjects.
 
-# Unsupervised learning
+# Unsupervised Learning
+
+Given the parallel coordinates plot, I think it's quite possible that there are clusters of council members that tend to speak on the same things. Let's get a sparse PCA transformation and see if we can determine any lower dimensional structure and then classify certain clusters of council members.
+
+```{r}
+
+```
+
+# Align Me
