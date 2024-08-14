@@ -188,10 +188,80 @@ We can see here that council members Herbold and Sawant tend not to talk about t
 
 # Unsupervised Learning
 
-Given the parallel coordinates plot, I think it's quite possible that there are clusters of council members that tend to speak on the same things. Let's get a sparse PCA transformation and see if we can determine any lower dimensional structure and then classify certain clusters of council members.
+Let's see if there's any clusters of posts, and whether any particular council members have outsized prevalence in those clusters. We will do this with a sparse PCA transformation and then observing in 3 reduced dimensions.
+
+```{r spca, warning=F, message=F}
+library(elasticnet)
+numbers_only = normdat[, 3:ncol(normdat)]
+sparse_loadings = spca(numbers_only,
+                       K = 3,
+                       sparse = "penalty",
+                       para = rep(0.5, 3),
+                       type = "predictor")
+sparse_matrix = as.data.frame(as.matrix(numbers_only) %*% sparse_loadings$loadings)
+sparse_matrix$date = normdat$date
+sparse_matrix$councilmember = normdat$councilmember
+
+plot_ly(data = sparse_matrix,
+        type = "scatter3d",
+        x = ~PC1, y = ~PC2, z = ~PC3,
+        size = 0.1, color = ~councilmember) %>%
+        layout(title = "Announcement Embeddings in 3 Dimensions")
+```
+
+That is certainly an interesting and unusual underlying structure, but I think there is a simple explanation for this. This is a natural consequence of using deep learning in the way that we did. By using a model to estimate the strength of the association of each announcement with a number of categories, we are creating a unit hypercube space in which each announcement is embedded. By reducing the dimensionality of the hypercube, we create an rotation of a standard 3-dimensional cube, in which each post is embedded. Since announcements from the city council are presumably usually about one main subject, most announcements are embedded along the vertices of the hypercube, and subsequently along the vertices of the cube as well. This is likely made more clear by the sparse transformation, as the regularization zeroes out the weaker relationships of each announcement with other categories.
+
+Unfortunately this structure doesn't indicate that any kind of clustering might be useful, but we may still be able to gain some insight from the embeddings.
+
+Let's do the same as we did previously and examine just Herbold, Sawant, and Mosqueda.
+
+*Tip: click on a name in the legend to hide / show announcements from that council member*
+
+```{r hsm embeddings, warning=F, message=F}
+hsm_sparse_matrix = sparse_matrix %>%
+        filter(councilmember %in% c("Herbold", "Mosqueda", "Sawant"))
+
+plot_ly(data = hsm_sparse_matrix,
+        type = "scatter3d",
+        x = ~PC1, y = ~PC2, z = ~PC3,
+        size = 0.1, color = ~councilmember) %>%
+  layout(title = list(text = "Announcement Embeddings in 3 Dimensions\nHerbold, Sawant, Mosqueda only", x = 0.1))
+```
+
+We can see that each of the three most prevalent council members have their own strong and weak areas when it comes to announcements. Sawant and Herbold each have strong presences in two axes, while Mosqueda's announcements are mostly concentrated in a single axis. We can use the sparse loadings to get an idea of what these subjects are.
+
+For Mosqueda, we look for subjects with PC3 and PC2 loadings of close to 0.
 
 ```{r}
+qs3 = quantile(abs(sparse_loadings$loadings[, 3]))
+qs2 = quantile(abs(sparse_loadings$loadings[, 2]))
+qs1 = quantile(abs(sparse_loadings$loadings[, 1]))
+sparse_loadings$loadings %>%
+        as.data.frame() %>%
+        mutate(variable = colnames(numbers_only)) %>%
+        filter(abs(PC3) < qs3[2] & abs(PC2) < qs2[2]) %>%
+        .$variable
+```
 
+For Sawant, we can look at subjects with just a PC3 of close to 0
+```{r}
+sparse_loadings$loadings %>%
+  as.data.frame() %>%
+  mutate(variable = colnames(numbers_only)) %>%
+  filter(abs(PC3) < qs3[2]) %>%
+  .$variable
+```
+
+And for Herbold we can look at subjects with a PC1 of close to 0.
+
+```{r}
+sparse_loadings$loadings %>%
+  as.data.frame() %>%
+  mutate(variable = colnames(numbers_only)) %>%
+  filter(abs(PC1) < qs1[2]) %>%
+  .$variable
 ```
 
 # Align Me
+
+The last thing I'd like to do with this data is make a tool.
