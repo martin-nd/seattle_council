@@ -261,7 +261,3 @@ sparse_loadings$loadings %>%
   filter(abs(PC1) < qs1[2]) %>%
   .$variable
 ```
-
-# Align Me
-
-The last thing I'd like to do with this data is make a tool. This tool will take into account this data of what these council members talk about, allow users to input how important certain issues are to them on a sliding scale, and then match those users with council members that are making announcements concerning the subjects that those users care about. Keep in mind that the deep learning model is only measuring the strength of the relationship between the announcement and the proposed category, it makes no judgement on the nuance of those council members' positions on those issues. The tool is currently in development, but will be available soon, linked here and on my website (which is probably how you got here).
